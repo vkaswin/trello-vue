@@ -1,7 +1,7 @@
 <template>
   <div class="add-list-card">
     <div>
-      <textarea v-model="title" />
+      <TextArea :value="title" @onChange="handleChange" />
       <span v-if="error" class="error-msg">Please enter title</span>
     </div>
     <div class="add-todo-btn">
@@ -13,10 +13,14 @@
 
 <script>
 import { ref, watch } from "vue";
+import TextArea from "@/components/TextArea";
 
 export default {
   name: "AddCard",
   props: ["toDoItems"],
+  components: {
+    TextArea,
+  },
   setup(props, { emit }) {
     const title = ref("");
 
@@ -48,11 +52,17 @@ export default {
       }
     };
 
+    const handleChange = (event) => {
+      const { value } = event.target;
+      title.value = value;
+    };
+
     return {
       title,
       error,
       emit,
       addToDo,
+      handleChange,
     };
   },
 };

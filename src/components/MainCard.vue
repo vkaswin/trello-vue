@@ -7,14 +7,15 @@
     <div class="add-sub-card">
       <div v-if="list.id === activeIndex" class="sub-card-field">
         <div>
-          <textarea placeholder="Enter the text for this card..." />
+          <textarea
+            placeholder="Enter the text for this card..."
+            v-model="cardText"
+          />
+          <span class="error-msg" v-if="error">Please enter text</span>
         </div>
         <div class="sub-field-btn">
-          <button>Add Card</button>
-          <i
-            class="fas fa-times"
-            @click="emit('toggleAddNew', list.id, false)"
-          ></i>
+          <button @click="addCard">Add Card</button>
+          <i class="fas fa-times" @click="closeCard"></i>
         </div>
       </div>
       <div v-else class="sub-card-btn">
@@ -28,6 +29,7 @@
 
 <script>
 import SubCard from "@/components/SubCard";
+import { ref, watch } from "vue";
 
 export default {
   name: "MainCard",
@@ -35,9 +37,52 @@ export default {
     SubCard,
   },
   props: ["list", "activeIndex"],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const cardText = ref("");
+
+    const error = ref(false);
+
+    const validate = ref(false);
+
+    watch(cardText, (val) => {
+      if (validate.value) {
+        if (val === "") {
+          error.value = true;
+        } else {
+          error.value = false;
+        }
+      }
+    });
+
+    const addCard = () => {
+      const {
+        list: { id },
+      } = props;
+      validate.value = true;
+      if (cardText.value === "") {
+        error.value = true;
+      } else {
+        emit("onAdd", id, cardText.value);
+        closeCard();
+      }
+    };
+
+    const closeCard = () => {
+      const {
+        list: { id },
+      } = props;
+      validate.value = false;
+      error.value = false;
+      cardText.value = "";
+      emit("toggleAddNew", id, false);
+    };
+
     return {
+      cardText,
+      error,
       emit,
+      addCard,
+      closeCard,
     };
   },
 };
@@ -49,7 +94,7 @@ export default {
   flex-direction: column;
   gap: 10px;
   background-color: #dfe3e6;
-  width: 300px;
+  min-width: 300px;
   height: fit-content;
   padding: 10px;
   border-radius: 10px;
@@ -61,8 +106,8 @@ export default {
   }
   .add-sub-card {
     background-color: #dfe3e6;
-    border-radius: 0px 0px 10px 10px;
     transition: background-color 0.2s;
+    box-sizing: border-box;
     .sub-card-btn {
       button {
         display: flex;
@@ -85,16 +130,18 @@ export default {
       display: flex;
       flex-direction: column;
       gap: 5px;
-      max-width: 100%;
       textarea {
         background-color: #fff;
         border: 1px solid rgba(0, 0, 0, 0.12);
         box-shadow: 0 1px 0 rgba(9, 45, 66, 0.25);
         border-radius: 5px;
-        width: calc(100% - 20px);
         padding: 10px;
+        width: 100%;
         outline: none;
         resize: none;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        font-size: 16px;
         &::placeholder {
           color: #757775;
         }

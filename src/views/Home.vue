@@ -8,6 +8,7 @@
         :list="list"
         :activeIndex="activeIndex"
         @toggleAddNew="toggleAddNew"
+        @onAdd="onAdd"
       />
       <div class="add-list" ref="toDoRef">
         <AddCard
@@ -59,9 +60,9 @@ export default {
     const activeIndex = ref(null);
 
     onMounted(() => {
-      let list = localStorage.getItem("toDo");
+      let list = localStorage.getItem("todo");
       if (list !== null) {
-        toDoList.value = list;
+        toDoList.value = JSON.parse(list);
       }
     });
 
@@ -77,11 +78,21 @@ export default {
 
     const addToDo = (data) => {
       toDoList.value = [...toDoList.value, data];
+      localStorage.setItem("todo", JSON.stringify(toDoList.value));
       toggle();
     };
 
     const toggleAddNew = (id, isOpen) => {
       activeIndex.value = isOpen ? id : null;
+    };
+
+    const onAdd = (id, data) => {
+      toDoList.value = toDoList.value.map((list) => {
+        return list.id === id
+          ? { ...list, subTitle: [...list.subTitle, data] }
+          : list;
+      });
+      localStorage.setItem("todo", JSON.stringify(toDoList.value));
     };
 
     return {
@@ -92,6 +103,7 @@ export default {
       toggle,
       addToDo,
       toggleAddNew,
+      onAdd,
     };
   },
 };
