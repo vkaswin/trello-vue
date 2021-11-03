@@ -1,7 +1,7 @@
 <template>
   <div class="add-list-card">
     <div>
-      <TextArea :value="title" @onChange="handleChange" />
+      <TextArea :value="title" name="title" @onChange="handleChange" />
       <span v-if="error" class="error-msg">Please enter title</span>
     </div>
     <div class="add-todo-btn">
@@ -47,7 +47,8 @@ export default {
         emit("addToDo", {
           id: toDoItems.length,
           title,
-          subTitle: [],
+          content: [],
+          isEdit: false,
         });
       }
     };

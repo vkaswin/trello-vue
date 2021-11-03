@@ -1,15 +1,28 @@
 <template>
   <div class="card">
     <div class="card-title">
-      <label>{{ list.title }}</label>
+      <div class="delete-title" ref="titleRef" v-if="activeIndex === list.id">
+        <TextArea
+          placeholder="Enter title..."
+          :value="title"
+          name="title"
+          @onChange="handleChange"
+        />
+        <i class="fas fa-trash" @click="emit('deleteToDo', list.id)"></i>
+      </div>
+      <div class="edit-title" v-else>
+        <label>{{ list.title }}</label>
+        <i class="fas fa-pencil-alt" @click="toggleTitle"></i>
+      </div>
     </div>
-    <SubCard v-for="(item, index) in list.subTitle" :key="index" :text="item" />
+    <SubCard v-for="(item, index) in list.content" :key="index" :data="item" />
     <div class="add-sub-card">
-      <div v-if="list.id === activeIndex" class="sub-card-field">
+      <div v-if="list.isEdit" class="sub-card-field">
         <div>
-          <textarea
-            placeholder="Enter the text for this card..."
-            v-model="cardText"
+          <TextArea
+            :value="cardText"
+            name="cardText"
+            @onChange="handleChange"
           />
           <span class="error-msg" v-if="error">Please enter text</span>
         </div>
@@ -29,20 +42,27 @@
 
 <script>
 import SubCard from "@/components/SubCard";
+import TextArea from "@/components/TextArea";
 import { ref, watch } from "vue";
+import { useOnClickOutSide } from "@/composables/useOnClickOutSide";
 
 export default {
   name: "MainCard",
   components: {
     SubCard,
+    TextArea,
   },
   props: ["list", "activeIndex"],
   setup(props, { emit }) {
     const cardText = ref("");
 
+    const title = ref("");
+
     const error = ref(false);
 
     const validate = ref(false);
+
+    const titleRef = ref();
 
     watch(cardText, (val) => {
       if (validate.value) {
@@ -53,6 +73,15 @@ export default {
         }
       }
     });
+
+    const handleChange = (event) => {
+      const { value, name } = event.target;
+      if (name === "title") {
+        title.value = value;
+      } else if (name === "cardText") {
+        cardText.value = value;
+      }
+    };
 
     const addCard = () => {
       const {
@@ -77,12 +106,34 @@ export default {
       emit("toggleAddNew", id, false);
     };
 
+    const closeTitle = () => {
+      const {
+        list: { id },
+      } = props;
+      emit("updateTitle", id, title.value);
+      emit("toggleTitle", id, false);
+    };
+
+    const toggleTitle = () => {
+      const {
+        list: { id, title: text },
+      } = props;
+      title.value = text;
+      emit("toggleTitle", id, true);
+    };
+
+    useOnClickOutSide(titleRef, closeTitle);
+
     return {
       cardText,
       error,
+      title,
+      titleRef,
       emit,
       addCard,
       closeCard,
+      handleChange,
+      toggleTitle,
     };
   },
 };
@@ -94,14 +145,55 @@ export default {
   flex-direction: column;
   gap: 10px;
   background-color: #dfe3e6;
+  max-width: 300px;
   min-width: 300px;
   height: fit-content;
   padding: 10px;
   border-radius: 10px;
   .card-title {
-    label {
-      font-size: 20px;
-      margin: 0px;
+    .delete-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      i {
+        background-color: transparent;
+        color: #6f7173;
+        font-size: 20px;
+        padding: 5px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        cursor: pointer;
+        &:hover {
+          background-color: #ccc;
+        }
+      }
+    }
+    .edit-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      label {
+        font-size: 20px;
+        margin: 0px;
+      }
+      i {
+        font-weight: normal;
+        opacity: 0;
+        background: #ccc;
+        color: gray;
+        font-size: 13px;
+        padding: 5px;
+        transition: all 0.2s;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      &:hover {
+        i {
+          opacity: 1;
+        }
+      }
     }
   }
   .add-sub-card {
@@ -130,22 +222,6 @@ export default {
       display: flex;
       flex-direction: column;
       gap: 5px;
-      textarea {
-        background-color: #fff;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-        box-shadow: 0 1px 0 rgba(9, 45, 66, 0.25);
-        border-radius: 5px;
-        padding: 10px;
-        width: 100%;
-        outline: none;
-        resize: none;
-        box-sizing: border-box;
-        font-family: "Poppins", sans-serif;
-        font-size: 16px;
-        &::placeholder {
-          color: #757775;
-        }
-      }
       .sub-field-btn {
         display: flex;
         gap: 10px;

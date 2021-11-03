@@ -1,14 +1,27 @@
 <template>
-  <div class="sub-card">
+  <div class="edi-sub-card" v-if="data.isEdit">
+    <TextArea />
+    <div class="edit-sub-card-btn">
+      <button class="save-btn">Save</button>
+      <button class="delete-btn">Delete</button>
+      <i class="fas fa-times"></i>
+    </div>
+  </div>
+
+  <div class="sub-card" v-else>
     <i class="fas fa-pencil-alt"></i>
-    <p>{{ text }}</p>
+    <p>{{ data.text }}</p>
   </div>
 </template>
 
 <script>
+import TextArea from "@/components/TextArea";
 export default {
   name: "SubCard",
-  props: ["text"],
+  components: {
+    TextArea,
+  },
+  props: ["data"],
 };
 </script>
 
@@ -43,6 +56,32 @@ export default {
     i {
       opacity: 1;
     }
+  }
+}
+
+.edit-sub-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  button {
+    width: 70px;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 0px;
+    color: white;
+    font-size: 16px;
+  }
+  .save-btn {
+    background-color: rgb(90, 172, 68);
+  }
+  .delete-btn {
+    background-color: rgb(234, 37, 37);
+  }
+  i {
+    color: #6f7173;
+    font-size: 18px;
+    font-weight: normal;
+    cursor: pointer;
   }
 }
 </style>

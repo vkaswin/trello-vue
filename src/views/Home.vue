@@ -9,6 +9,9 @@
         :activeIndex="activeIndex"
         @toggleAddNew="toggleAddNew"
         @onAdd="onAdd"
+        @toggleTitle="toggleTitle"
+        @deleteToDo="deleteToDo"
+        @updateTitle="updateTitle"
       />
       <div class="add-list" ref="toDoRef">
         <AddCard
@@ -44,12 +47,20 @@ export default {
       {
         id: 0,
         title: "First List",
-        subTitle: ["Loreum Ispum", "Loreum Ispum"],
+        content: [
+          { text: "Loreum Ispum", isEdit: false },
+          { text: "Loreum Ispum", isEdit: false },
+        ],
+        isEdit: false,
       },
       {
         id: 1,
         title: "Second List",
-        subTitle: ["Loreum Ispum", "Loreum Ispum"],
+        content: [
+          { text: "Loreum Ispum", isEdit: false },
+          { text: "Loreum Ispum", isEdit: false },
+        ],
+        isEdit: false,
       },
     ]);
 
@@ -74,8 +85,6 @@ export default {
       isOpen.value = false;
     };
 
-    useOnClickOutSide(toDoRef, closeToDoList);
-
     const addToDo = (data) => {
       toDoList.value = [...toDoList.value, data];
       localStorage.setItem("todo", JSON.stringify(toDoList.value));
@@ -83,17 +92,45 @@ export default {
     };
 
     const toggleAddNew = (id, isOpen) => {
-      activeIndex.value = isOpen ? id : null;
+      toDoList.value = toDoList.value.map((list, index) => {
+        return id === index ? { ...list, isEdit: isOpen } : list;
+      });
     };
 
     const onAdd = (id, data) => {
       toDoList.value = toDoList.value.map((list) => {
         return list.id === id
-          ? { ...list, subTitle: [...list.subTitle, data] }
+          ? {
+              ...list,
+              isEdit: false,
+              content: [...list.content, { text: data, isEdit: false }],
+            }
           : list;
       });
       localStorage.setItem("todo", JSON.stringify(toDoList.value));
     };
+
+    const toggleTitle = (id, isOpen) => {
+      activeIndex.value = isOpen ? id : null;
+    };
+
+    const deleteToDo = (id) => {
+      if (window.confirm("Are you sure to delete this?")) {
+        toDoList.value = toDoList.value.filter((list, index) => {
+          return index !== id;
+        });
+        localStorage.setItem("todo", JSON.stringify(toDoList.value));
+      }
+    };
+
+    const updateTitle = (id, data) => {
+      toDoList.value = toDoList.value.map((list, index) => {
+        return index === id ? { ...list, title: data } : list;
+      });
+      localStorage.setItem("todo", JSON.stringify(toDoList.value));
+    };
+
+    useOnClickOutSide(toDoRef, closeToDoList);
 
     return {
       toDoList,
@@ -104,6 +141,9 @@ export default {
       addToDo,
       toggleAddNew,
       onAdd,
+      deleteToDo,
+      toggleTitle,
+      updateTitle,
     };
   },
 };
