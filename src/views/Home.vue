@@ -12,6 +12,9 @@
         @toggleTitle="toggleTitle"
         @deleteToDo="deleteToDo"
         @updateTitle="updateTitle"
+        @toggleEdit="toggleEdit"
+        @deleteSubCard="deleteSubCard"
+        @updateSubCard="updateSubCard"
       />
       <div class="add-list" ref="toDoRef">
         <AddCard
@@ -87,7 +90,7 @@ export default {
 
     const addToDo = (data) => {
       toDoList.value = [...toDoList.value, data];
-      localStorage.setItem("todo", JSON.stringify(toDoList.value));
+      saveToDo();
       toggle();
     };
 
@@ -107,7 +110,7 @@ export default {
             }
           : list;
       });
-      localStorage.setItem("todo", JSON.stringify(toDoList.value));
+      saveToDo();
     };
 
     const toggleTitle = (id, isOpen) => {
@@ -119,7 +122,7 @@ export default {
         toDoList.value = toDoList.value.filter((list, index) => {
           return index !== id;
         });
-        localStorage.setItem("todo", JSON.stringify(toDoList.value));
+        saveToDo();
       }
     };
 
@@ -127,6 +130,50 @@ export default {
       toDoList.value = toDoList.value.map((list, index) => {
         return index === id ? { ...list, title: data } : list;
       });
+      saveToDo();
+    };
+
+    const toggleEdit = ({ rootId, id, isOpen }) => {
+      toDoList.value = toDoList.value.map((list, index) => {
+        return index === rootId
+          ? {
+              ...list,
+              content: list.content.map((item, idx) => {
+                return idx === id ? { ...item, isEdit: isOpen } : item;
+              }),
+            }
+          : list;
+      });
+    };
+
+    const deleteSubCard = ({ rootId, id }) => {
+      toDoList.value = toDoList.value.map((list, index) => {
+        return index === rootId
+          ? {
+              ...list,
+              content: list.content.filter((_, idx) => {
+                return idx !== id;
+              }),
+            }
+          : list;
+      });
+    };
+
+    const updateSubCard = ({ rootId, id, text }) => {
+      toDoList.value = toDoList.value.map((list, index) => {
+        return index === rootId
+          ? {
+              ...list,
+              content: list.content.map((item, idx) => {
+                return idx === id ? { ...item, isEdit: false, text } : item;
+              }),
+            }
+          : list;
+      });
+      saveToDo();
+    };
+
+    const saveToDo = () => {
       localStorage.setItem("todo", JSON.stringify(toDoList.value));
     };
 
@@ -144,6 +191,9 @@ export default {
       deleteToDo,
       toggleTitle,
       updateTitle,
+      toggleEdit,
+      deleteSubCard,
+      updateSubCard,
     };
   },
 };

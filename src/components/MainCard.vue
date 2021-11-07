@@ -15,7 +15,16 @@
         <i class="fas fa-pencil-alt" @click="toggleTitle"></i>
       </div>
     </div>
-    <SubCard v-for="(item, index) in list.content" :key="index" :data="item" />
+    <SubCard
+      v-for="(item, index) in list.content"
+      :key="index"
+      :data="item"
+      :id="index"
+      :rootId="list.id"
+      @toggleEdit="toggleEdit"
+      @deleteSubCard="deleteSubCard"
+      @updateSubCard="updateSubCard"
+    />
     <div class="add-sub-card">
       <div v-if="list.isEdit" class="sub-card-field">
         <div>
@@ -52,7 +61,14 @@ export default {
     SubCard,
     TextArea,
   },
-  props: ["list", "activeIndex"],
+  props: {
+    list: {
+      type: Object,
+    },
+    activeIndex: {
+      type: Number,
+    },
+  },
   setup(props, { emit }) {
     const cardText = ref("");
 
@@ -122,6 +138,18 @@ export default {
       emit("toggleTitle", id, true);
     };
 
+    const toggleEdit = (data) => {
+      emit("toggleEdit", data);
+    };
+
+    const deleteSubCard = (data) => {
+      emit("deleteSubCard", data);
+    };
+
+    const updateSubCard = (data) => {
+      emit("updateSubCard", data);
+    };
+
     useOnClickOutSide(titleRef, closeTitle);
 
     return {
@@ -134,6 +162,9 @@ export default {
       closeCard,
       handleChange,
       toggleTitle,
+      toggleEdit,
+      deleteSubCard,
+      updateSubCard,
     };
   },
 };

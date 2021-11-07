@@ -1,27 +1,87 @@
 <template>
   <div class="edi-sub-card" v-if="data.isEdit">
-    <TextArea />
+    <TextArea :value="data.text" name="subCardText" @onChange="handleChange" />
+    <span v-if="error" class="error-msg">Please enter text</span>
     <div class="edit-sub-card-btn">
-      <button class="save-btn">Save</button>
-      <button class="delete-btn">Delete</button>
-      <i class="fas fa-times"></i>
+      <button class="save-btn" @click="onSave">Save</button>
+      <button class="delete-btn" @click="emit('deleteSubCard', { rootId, id })">
+        Delete
+      </button>
+      <i
+        class="fas fa-times"
+        @click="emit('toggleEdit', { rootId, id, isOpen: false })"
+      ></i>
     </div>
   </div>
-
   <div class="sub-card" v-else>
-    <i class="fas fa-pencil-alt"></i>
+    <i
+      class="fas fa-pencil-alt"
+      @click="emit('toggleEdit', { rootId, id, isOpen: true })"
+    ></i>
     <p>{{ data.text }}</p>
   </div>
 </template>
 
 <script>
 import TextArea from "@/components/TextArea";
+import { ref, watch } from "vue";
+
 export default {
   name: "SubCard",
   components: {
     TextArea,
   },
-  props: ["data"],
+  props: {
+    data: {
+      type: Object,
+    },
+    rootId: {
+      type: Number,
+    },
+    id: {
+      type: Number,
+    },
+  },
+  setup(props, { emit }) {
+    const subCardText = ref("");
+
+    const error = ref(false);
+
+    const validate = ref(false);
+
+    watch(subCardText, (val) => {
+      if (validate.value) {
+        if (val === "") {
+          error.value = true;
+        } else {
+          error.value = false;
+        }
+      }
+    });
+
+    const handleChange = (event) => {
+      const { value } = event.target;
+      subCardText.value = value;
+    };
+
+    const onSave = () => {
+      const { rootId, id } = props;
+      validate.value = true;
+      if (subCardText.value === "") {
+        error.value = true;
+      } else {
+        emit("updateSubCard", { rootId, id, text: subCardText });
+      }
+    };
+
+    return {
+      subCardText,
+      error,
+      emit,
+      handleChange,
+      onSave,
+    };
+  },
 };
 </script>
 
@@ -63,6 +123,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 5px;
   button {
     width: 70px;
     border: none;
@@ -70,6 +131,7 @@ export default {
     padding: 5px 0px;
     color: white;
     font-size: 16px;
+    outline: none;
   }
   .save-btn {
     background-color: rgb(90, 172, 68);
