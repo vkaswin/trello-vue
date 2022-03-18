@@ -75,6 +75,7 @@ export default {
 
     onMounted(() => {
       let list = localStorage.getItem("todo");
+      console.log(list);
       if (list !== null) {
         toDoList.value = JSON.parse(list);
       }
