@@ -1,3 +1,3 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === "production" ? "/vue-trello-app/" : "/",
+  publicPath: process.env.NODE_ENV === "production" ? "/trello-vue/" : "/",
 };
